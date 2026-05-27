@@ -1,11 +1,17 @@
 const express = require('express');
 const os = require('os');
+const path = require('path');
 
 const app = express();
 
 const PORT = process.env.PORT || 8080;
 
+app.use(express.json());
 app.use(express.static(__dirname));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 app.get('/specs', (req, res) => {
   res.json({
@@ -16,12 +22,14 @@ app.get('/specs', (req, res) => {
 });
 
 app.post('/run/:action', (req, res) => {
+  const action = req.params.action;
+
   res.json({
     success: true,
-    name: req.params.action
+    name: action.toUpperCase()
   });
 });
 
 app.listen(PORT, () => {
-  console.log('Server running');
+  console.log(`Server running on port ${PORT}`);
 });
