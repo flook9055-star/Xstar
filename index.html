@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>XSTAR — FPS BOOSTER</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Kanit:wght@300;400;700&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body {
+  font-family: 'Rajdhani', 'Kanit', sans-serif;
+  background: #000;
+  color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* GIF Background */
+.bg {
+  position: fixed; inset: 0; z-index: 0;
+  background: url('https://files.catbox.moe/7pttkj.gif') center/cover no-repeat;
+  filter: brightness(0.25) grayscale(0.3);
+}
+.bg-overlay {
+  position: fixed; inset: 0; z-index: 1;
+  background: linear-gradient(to bottom,
+    rgba(0,0,0,0.3) 0%,
+    rgba(0,0,0,0.5) 50%,
+    rgba(0,0,0,0.85) 100%);
+}
+
+.wrap {
+  position: relative; z-index: 2;
+  max-width: 820px; margin: 0 auto;
+  padding: 48px 24px 40px;
+}
+
+/* Header */
+.header { text-align: center; margin-bottom: 48px; }
+.logo-text {
+  font-size: 11px; letter-spacing: 8px;
+  color: rgba(255,255,255,0.4); margin-bottom: 12px;
+}
+.main-title {
+  font-size: 56px; font-weight: 700;
+  letter-spacing: 12px;
+  color: #fff;
+  text-shadow: 0 0 40px rgba(255,255,255,0.15);
+}
+.sub-title {
+  font-size: 10px; letter-spacing: 5px;
+  color: rgba(255,255,255,0.3); margin-top: 8px;
+}
+.divider {
+  width: 60px; height: 1px;
+  background: rgba(255,255,255,0.2);
+  margin: 20px auto;
+}
+
+/* Music Player */
+.music-player {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 32px;
+  display: flex; align-items: center; gap: 20px;
+  backdrop-filter: blur(10px);
+}
+.music-info { flex: 1; }
+.music-title { font-size: 13px; font-weight: 600; letter-spacing: 2px; color: #fff; }
+.music-artist { font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+.music-controls { display: flex; align-items: center; gap: 12px; }
+.play-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff; font-size: 16px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.play-btn:hover { background: rgba(255,255,255,0.2); }
+.progress-wrap { flex: 1; }
+.progress-bar {
+  width: 100%; height: 2px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px; cursor: pointer;
+  position: relative;
+}
+.progress-fill {
+  height: 100%; background: rgba(255,255,255,0.6);
+  border-radius: 2px; width: 0%;
+  transition: width 0.1s;
+}
+.time-wrap { display: flex; justify-content: space-between; margin-top: 6px; }
+.time-txt { font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing: 1px; }
+audio { display: none; }
+
+/* Grid */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.grid-1 { grid-template-columns: 1fr; }
+
+.card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 24px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s;
+  backdrop-filter: blur(8px);
+  position: relative; overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.04), transparent);
+  opacity: 0; transition: opacity 0.2s;
+}
+.card:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); }
+.card:hover::before { opacity: 1; }
+.card:active { transform: scale(0.97); }
+.card.loading { opacity: 0.5; pointer-events: none; }
+
+.card-icon { font-size: 26px; margin-bottom: 10px; }
+.card-title { font-size: 14px; font-weight: 700; letter-spacing: 2px; color: #fff; }
+.card-desc { font-size: 10px; letter-spacing: 1px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+
+/* Status */
+.status-box {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(8px);
+}
+.status-label { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.3); margin-bottom: 10px; }
+.log-line { font-family: 'Consolas', monospace; font-size: 11px; color: rgba(255,255,255,0.6); line-height: 2; }
+.log-line span.ok { color: rgba(100,255,150,0.8); }
+.log-line span.err { color: rgba(255,100,100,0.8); }
+
+/* Specs */
+.specs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.spec {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 14px; text-align: center;
+  backdrop-filter: blur(8px);
+}
+.spec-val { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.85); }
+.spec-lbl { font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.3); margin-top: 4px; }
+
+.footer { text-align: center; font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.15); margin-top: 24px; }
+
+/* Typewriter */
+.typewriter { display: inline-block; }
+.cursor {
+  display: inline-block;
+  width: 2px; height: 1em;
+  background: rgba(255,255,255,0.7);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 0.75s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 28px; right: 28px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(12px);
+  color: #fff; padding: 12px 20px;
+  border-radius: 10px; font-size: 12px; letter-spacing: 1px;
+  transform: translateY(60px); opacity: 0;
+  transition: all 0.3s; z-index: 99;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="bg-overlay"></div>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-text"><span id="tw0"></span><span class="cursor"></span></div>
+    <div class="main-title"><span id="tw1"></span><span class="cursor"></span></div>
+    <div class="sub-title"><span id="tw2"></span><span class="cursor"></span></div>
+    <div class="divider"></div>
+  </div>
+
+  <!-- Music Player -->
+  <div class="music-player">
+    <div class="music-info">
+      <div class="music-title">IS THERE SOMEONE ELSE</div>
+      <div class="music-artist">THE WEEKND</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar" onclick="seek(event)">
+        <div class="progress-fill" id="pFill"></div>
+      </div>
+      <div class="time-wrap">
+        <span class="time-txt" id="tCur">0:00</span>
+        <span class="time-txt" id="tDur">0:00</span>
+      </div>
+    </div>
+    <div class="music-controls">
+      <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+    </div>
+  </div>
+  <audio id="audio" src="https://files.catbox.moe/rwx224.mp3"></audio>
+
+  <!-- Specs -->
+  <div class="specs" id="specsGrid">
+    <div class="spec"><div class="spec-val" id="sRam">—</div><div class="spec-lbl">RAM TOTAL</div></div>
+    <div class="spec"><div class="spec-val" id="sFree">—</div><div class="spec-lbl">RAM FREE</div></div>
+    <div class="spec"><div class="spec-val" id="sCpu" style="font-size:11px">—</div><div class="spec-lbl">CPU</div></div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="grid">
+    <div class="card" onclick="run('visual_off',this)">
+      <div class="card-icon">🎮</div>
+      <div class="card-title">ECONOMY</div>
+      <div class="card-desc">ปิด Visual Effects</div>
+    </div>
+    <div class="card" onclick="run('gaming_mode',this)">
+      <div class="card-icon">🔥</div>
+      <div class="card-title">GAMING</div>
+      <div class="card-desc">เปิด Game Mode เต็มที่</div>
+    </div>
+    <div class="card" onclick="run('high_performance',this)">
+      <div class="card-icon">⚡</div>
+      <div class="card-title">HIGH PERF</div>
+      <div class="card-desc">CPU / GPU ดีสุด</div>
+    </div>
+    <div class="card" onclick="run('clean_ram',this)">
+      <div class="card-icon">🧹</div>
+      <div class="card-title">CLEAN RAM</div>
+      <div class="card-desc">ล้าง RAM + Temp Files</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card" onclick="run('ultra_mode',this)" style="padding:28px">
+      <div class="card-icon">💀</div>
+      <div class="card-title">ULTRA MODE</div>
+      <div class="card-desc">ทำทุกอย่าง · FPS +30~60%</div>
+    </div>
+    <div class="card" onclick="run('high_priority',this)">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">PRIORITY</div>
+      <div class="card-desc">ให้ CPU โฟกัสเกมก่อน</div>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="status-box">
+    <div class="status-label">◆ STATUS LOG</div>
+    <div id="logBox">
+      <div class="log-line"><span class="ok">✓</span> SYSTEM READY</div>
+    </div>
+  </div>
+
+  <!-- Restore -->
+  <div class="grid grid-1">
+    <div class="card" onclick="run('restore',this)" style="padding:18px;flex-direction:row;display:flex;align-items:center;justify-content:center;gap:12px">
+      <span style="font-size:18px">🔄</span>
+      <div>
+        <div class="card-title" style="text-align:left">RESTORE DEFAULT</div>
+        <div class="card-desc" style="text-align:left">คืนค่าทั้งหมดสู่ค่าเริ่มต้น</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">⚠ RUN AS ADMINISTRATOR · LOCALHOST:8080 · XSTAR PRIVATE TOOL</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Autoplay music ──
+window.addEventListener('click', function startMusic() {
+  audio.play().catch(()=>{});
+  playBtn.textContent = '❚❚';
+  window.removeEventListener('click', startMusic);
+}, { once: false });
+
+document.addEventListener('DOMContentLoaded', () => {
+  audio.play().then(() => { playBtn.textContent = '❚❚'; }).catch(() => {});
+});
+
+// ── Typewriter ──
+function typeWriter(el, text, speed, cb) {
+  let i = 0;
+  function tick() {
+    el.textContent = text.slice(0, i++);
+    if (i <= text.length) setTimeout(tick, speed);
+    else if (cb) cb();
+  }
+  tick();
+}
+window.addEventListener('load', () => {
+  typeWriter(document.getElementById('tw0'), '— XSTAR GAMING —', 60, () => {
+    typeWriter(document.getElementById('tw1'), 'FPS BOOST', 80, () => {
+      typeWriter(document.getElementById('tw2'), 'REAL TIME SYSTEM OPTIMIZER · LOCALHOST ONLY', 30);
+    });
+  });
+});
+const audio = document.getElementById('audio');
+const playBtn = document.getElementById('playBtn');
+const pFill = document.getElementById('pFill');
+
+function togglePlay() {
+  if (audio.paused) { audio.play(); playBtn.textContent = '❚❚'; }
+  else { audio.pause(); playBtn.textContent = '▶'; }
+}
+function fmtTime(s) {
+  return `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+}
+audio.addEventListener('timeupdate', () => {
+  if (!audio.duration) return;
+  const pct = (audio.currentTime / audio.duration) * 100;
+  pFill.style.width = pct + '%';
+  document.getElementById('tCur').textContent = fmtTime(audio.currentTime);
+  document.getElementById('tDur').textContent = fmtTime(audio.duration);
+});
+function seek(e) {
+  const bar = e.currentTarget;
+  const x = e.offsetX / bar.offsetWidth;
+  audio.currentTime = x * audio.duration;
+}
+
+// ── Boost ──
+function log(icon, msg) {
+  const box = document.getElementById('logBox');
+  const d = document.createElement('div');
+  d.className = 'log-line';
+  d.innerHTML = `<span class="${icon==='✓'?'ok':'err'}">${icon}</span> ${msg}`;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  setTimeout(() => t.className = 'toast', 2500);
+}
+
+async function run(action, el) {
+  el.classList.add('loading');
+  const title = el.querySelector('.card-title').textContent;
+  log('⏳', `${title} — กำลังรัน...`);
+  try {
+    const r = await fetch(`/run/${action}`, { method: 'POST' });
+    const d = await r.json();
+    log('✓', `${d.name} — สำเร็จ`);
+    toast(`✓ ${d.name}`);
+  } catch { log('✗', 'เชื่อมต่อ server ไม่ได้'); }
+  el.classList.remove('loading');
+}
+
+// ── Specs ──
+async function loadSpecs() {
+  try {
+    const r = await fetch('/specs');
+    const d = await r.json();
+    document.getElementById('sRam').textContent = d.ram || '—';
+    document.getElementById('sFree').textContent = d.freeRam || '—';
+    document.getElementById('sCpu').textContent = d.cpu || '—';
+  } catch {}
+}
+loadSpecs();
+</script>
+</body>
+</html>
